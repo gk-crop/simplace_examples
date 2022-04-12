@@ -11,7 +11,9 @@ SimplaceFunction <- function( param_values=NULL,
   # Perform the simulations, don't break if Simplace breaks but return error=TRUE 
   tryCatch({
     
-    # fetch parameters provided by CroptimizeR
+    # fetch parameters from CroptimizeR and add the values to the parameter list
+    # If required some (pre)processing or check of parameters could be done here 
+    # if the Simplace solution can't handle some parameters directly
     param <- list()
     for (iparam in names(param_values)) {
       param[[iparam]]=param_values[iparam]
@@ -35,6 +37,8 @@ SimplaceFunction <- function( param_values=NULL,
       df <- simplace::resultToDataframe(res)
       
       # Add the date column as CroptimizeR requires it
+      # If required, some additional (post)processing can be performed here if 
+      # the Simplace output does not comply to the CroptimizeR standards
       df$Date <- df$CURRENT.DATE
       
       # Add the result of the situation

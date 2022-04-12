@@ -1,3 +1,9 @@
+#' ---
+#' title: Calibration of Simplace simulation with CroptimizeR
+#' author: Gunther Krauss
+#' date: April 12, 2022
+#' ---
+
 #' # Preparations for Simplace
 #' Load the wrapper function that runs Simplace simulations
 source("SimplaceFunction.R")
