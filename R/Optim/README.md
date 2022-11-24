@@ -16,3 +16,7 @@ install.packages('simplace', repos=c('http://r-forge.r-project.org','http://cran
 ## Run the optimisation
 
 Download the content of this folder (including subdirectories). Then set the working directory to the downloaded directory (e.g. by using `setwd()`) and run the scripts.
+
+- `YieldCalibrationSimple.R` - calibrating a simulation for a single location.
+- `YieldCalibrationMultipleLocations.R` - calibrating a simulation for multiple locations, weather data for locations in different files.
+- `YieldCalibrationMultipleLocationsParallelruns.R` - calibrating a simulation for multiple locations, weather data for all locations in one file allowing simulations to run in parallel.

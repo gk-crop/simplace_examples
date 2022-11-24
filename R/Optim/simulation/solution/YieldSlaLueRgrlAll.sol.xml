@@ -241,7 +241,7 @@ WIKI_END</description>
     </simcomponent>
   </simmodel>
   <outputs>
-    <output id="LintulSum" interface="sumyieldout" frequence="YEARLY" cachesize="2">
+    <output id="Yields" interface="sumyieldout" frequence="YEARLY" cachesize="2">
       <header>
 	    <out id="ClimateZone" datatype="CHAR" mode="LAST" rule="vClimateZone" />
 	    <out id="Year" datatype="INT" mode="LAST" rule="CURRENT.YEAR" />
