@@ -161,7 +161,6 @@ WIKI_END</description>
       </header>
       <!--input id="SunInclinationField">SunInclination</input-->
       <input id="LatitudeField">Latitude</input>
-      <input id="IdField">CROPNAME</input>
     </transform>
   </resources>
   <simmodel>

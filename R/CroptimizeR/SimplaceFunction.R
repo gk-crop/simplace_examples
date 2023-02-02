@@ -1,7 +1,7 @@
 #' Define the optimisation function according to the CroptimizeR specification
 
 SimplaceFunction <- function(param_values=NULL,
-                             sit_names=NULL,
+                             situation=NULL,
                              model_options,
                              sit_var_dates_mask=NULL, ...) {
 

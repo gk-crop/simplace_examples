@@ -61,7 +61,7 @@ param_info <- list(lb = c(vLUE =  0, vSLA = 0.0, vRGRL = 0.00001),
                    ub = c(vLUE = 10, vSLA = 0.1, vRGRL = 0.05))
 
 #' Set the options for CroptimizeR
-optim_options <- list(path_results = paste0(getwd(), "/output"),   # path where
+optim_options <- list(out_dir = paste0(getwd(), "/output"),   # path where
                    # to store the results (graph and Rdata)
                    nb_rep = 2,     # Number of repetitions of the minimization;
                    ranseed = 1234, # set random seed so that each execution give
