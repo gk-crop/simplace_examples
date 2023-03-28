@@ -1,5 +1,5 @@
 #' ---
-#' title: Calibration of Simplace simulation with CroptimizeR
+#' title: Calibration of Simplace simulation with CroptimizR
 #' author: Gunther Krauss
 #' date: April 12, 2022
 #' ---
@@ -48,7 +48,7 @@ simplace::openProject(model_options$SimplaceInstance,
 simplace::setLogLevel("WARN")
 
 #'
-#' # Preparations for CroptimizeR
+#' # Preparations for CroptimizR
 #'
 
 #' Read the observed data
@@ -60,7 +60,7 @@ names(obs_list) <- model_options$Situations
 param_info <- list(lb = c(vLUE =  0, vSLA = 0.0, vRGRL = 0.00001),
                    ub = c(vLUE = 10, vSLA = 0.1, vRGRL = 0.05))
 
-#' Set the options for CroptimizeR
+#' Set the options for CroptimizR
 optim_options <- list(out_dir = paste0(getwd(), "/output"),   # path where
                    # to store the results (graph and Rdata)
                    nb_rep = 2,     # Number of repetitions of the minimization;
@@ -72,7 +72,7 @@ optim_options <- list(out_dir = paste0(getwd(), "/output"),   # path where
 #' # Runing the optimisation
 #'
 
-#' Run the optimisation process by CroptimizeR
+#' Run the optimisation process by CroptimizR
 CroptimizR::estim_param(obs_list = obs_list,
                         model_function = model_function,
                         model_options = model_options,

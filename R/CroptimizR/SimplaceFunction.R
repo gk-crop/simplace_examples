@@ -1,4 +1,4 @@
-#' Define the optimisation function according to the CroptimizeR specification
+#' Define the optimisation function according to the CroptimizR specification
 
 SimplaceFunction <- function(param_values=NULL,
                              situation=NULL,
@@ -11,7 +11,7 @@ SimplaceFunction <- function(param_values=NULL,
   # Perform simulations, don't break if Simplace breaks but return error=TRUE
   tryCatch({
 
-    # fetch parameters from CroptimizeR and add the values to the parameter list
+    # fetch parameters from CroptimizR and add the values to the parameter list
     # If required some (pre)processing or check of parameters could be done here
     # if the Simplace solution can't handle some parameters directly
     param <- list()
@@ -36,9 +36,9 @@ SimplaceFunction <- function(param_values=NULL,
                                  model_options$OutputId, id)
       df <- simplace::resultToDataframe(res)
 
-      # Add the date column as CroptimizeR requires it
+      # Add the date column as CroptimizR requires it
       # If required, some additional (post)processing can be performed here if
-      # the Simplace output does not comply to the CroptimizeR standards
+      # the Simplace output does not comply to the CroptimizR standards
       df$Date <- df$CURRENT.DATE
 
       # Add the result of the situation
