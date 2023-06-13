@@ -154,8 +154,8 @@ FunctionRecorder <- setRefClass(
       c(runInfo, temporaryInfo)[1:count]
     } ,
     get_as_df = function() tryCatch({
-      df <- data.frame(do.call(rbind, .self$get()),row.names = NULL)
-      if(length(.self$get())>0 && is.null(names(.self$get()[[1]]))){
+      df <- data.frame(do.call(rbind, get()),row.names = NULL)
+      if(length(get())>0 && is.null(names(get()[[1]]))){
         names(df)<-c(paste0("P",1:(ncol(df)-1)),"Value")
       }
       df
@@ -167,14 +167,21 @@ FunctionRecorder <- setRefClass(
       count <<- 0
     },
     enhanceWithRecorder = function(fun,info_fun=\(p,r)c(p,r), ...) {
-      .self$reset()
+      reset()
       function(...) {
         r <- fun(...)
-        .self$add(info_fun(...,r))
+        add(info_fun(...,r))
         r
       }
+    },
+    initialize = function() {
+      runInfo <<-list()
+      temporaryInfo <<- list()
+      temporarycount <<- 0
+      count <<- 0
     }
-  ))
+  )
+)
 
 
 
@@ -274,4 +281,217 @@ tm
 #' then the overhead of the recording will be neglectable for most cases.
 #'
 
+#' 
+#' # Extending FunctionRecorder to write to disk
+#' 
+#' Optimisation process may not finish always properly. Common failures can be
+#' 
+#' - crashing of the task (e.g. when running out of memory)
+#' - aborting the task (e.g. when assigned computation time on clusters expires)
+#'
+#' Recorded run data will vanish from memory in these cases. Therefore it's recommended for 
+#' long running tasks to write the logged data to disk from time to time. 
+#' 
+#' We extend the FunctionRecorder to accomplish the intermediate storage of data to disk.
+#' 
+#' The new recorder has a method `write()` that writes the data to disk. 
+#' Actually it does not write the complete data at once, but it appends the 
+#' new data to the file. The write method is called every time a new entry is 
+#' added, but it will write to disk only if the time after the
+#' last write exceeds a given time interval.
+#' 
+#' When creating a new instance of the `FunctionRecorderToDisk`,
+#' the user has to supply a filename where to write and optionally the time 
+#' interval (in minutes) between automatic writes. The minimum time interval is 1 minute, 
+#' the default one is 5 minutes.
+#' 
 
+FunctionRecorderToDisk <- setRefClass(
+  "FunctionRecorderToDisk",
+  fields = list(
+    filename = "character",
+    writeinterval = "numeric",
+    lastwrittentime = "numeric",
+    lastwrittencount = "numeric"
+  ),
+  
+  contains = "FunctionRecorder",
+  
+  methods = list(
+    
+    write = function(force=TRUE) {
+      if(count > lastwrittencount &
+         (force || as.numeric(Sys.time()) > lastwrittentime + writeinterval*60)) {
+        append <- lastwrittencount!=0
+        write.table(
+          get_as_df()[(lastwrittencount +1):count,],
+          filename,
+          col.names = !append,
+          append = append,
+          row.names = FALSE,
+          sep=","
+        )
+        lastwrittencount <<- count
+        lastwrittentime <<- as.numeric(Sys.time())
+      }
+    },
+    
+    add = function(...) {
+      callSuper(...)
+      write(force=FALSE)
+    },
+    
+    reset = function(newfile = NULL) {
+      if(count > lastwrittencount) {
+        write()
+      }
+      if(!is.null(newfile) && newfile!="")
+      {
+        filename <<- newfile
+      }
+      callSuper()
+      lastwrittentime <<- 0
+      lastwrittencount <<- 0
+      
+    },
+    
+    initialize = function(file, interval=5) {
+      callSuper()
+      lastwrittentime <<- 0
+      lastwrittencount <<- 0
+      filename <<- file
+      writeinterval <<- min(1,interval)
+    },
+    
+    finalize = function() {
+      write()
+    }
+  )
+  
+)
+
+#'
+#' ## Example of writing recorded data to disk
+#'
+#' We create a function that needs at least two 
+#' seconds to execute (by letting it sleep for 2 seconds).
+
+
+longcomputation <- function (p) {
+  Sys.sleep(1)
+  p^2
+}
+
+#' We create a function recorder that will log the
+#' data to the file `longrun_recorded.csv` every minute.
+#' and enhance our function.
+#'
+FRD <- FunctionRecorderToDisk$new("longrun_recorded.csv",1)
+
+
+longcomputation_recorded <- FRD$enhanceWithRecorder(longcomputation)
+
+#' Now we run the enhanced function 100 times, which will take appx. 100 seconds.
+#' We expect that after appx. 60 seconds the intermediate data will be written to disk.
+for(i in 1:100) {
+  longcomputation_recorded(i)
+}
+
+#' Let's check the written file:
+recdata <- read.table("longrun_recorded.csv", sep=",", header=TRUE)
+tail(recdata)
+writtenrows <- nrow(recdata)
+writtenrows
+#' The file contains `r writtenrows` rows - which where written after 1 minute.
+
+#' After finishing the calculation, we call the `write()` function one more time
+#' explicitely to write the remaining data since the automatic write.
+FRD$write()
+
+recdata <- read.table("longrun_recorded.csv", sep=",", header=TRUE)
+tail(recdata)
+writtenrows <- nrow(recdata)
+writtenrows
+
+
+#'
+#' # Wrap up
+#' 
+#' If you want to use the enhancing functions, you can 
+#' download the files
+#' 
+#' * `boundaries.R`
+#' * `FunctionRecorder.R`
+#' 
+#' and include (`source`) them into your scripts.
+#' 
+#' ## Pure functional recorder
+#' 
+#' We don't really need references classes, we 
+#' can also use R's standard mechanisms for closures.
+#' The benefits of reference classes are, 
+#' 
+#' * their definition is more explicit
+#' * we can use inheritance to extend functionality
+#'
+#' Anyway, here the code for a recorder that does not use
+#' reference classes.
+#' 
+
+create_function_recorder <- function() {
+  
+  runInfo <- list()
+  temporaryInfo <- list()
+  count <- 0
+  temporarycount <- 0
+  
+  
+    add <- function(x) {
+      count <<- count + 1
+      temporarycount <<- temporarycount + 1
+      if(length(temporaryInfo)<temporarycount) {
+        ls <- list()
+        v <- rep(0.0,length(x))
+        for(i in 1:1000) {
+          ls[[length(ls)+1]]<-v
+        }
+        runInfo <<-c(runInfo,temporaryInfo)
+        temporarycount <<- 1
+        temporaryInfo <<- ls
+      }
+      temporaryInfo[[temporarycount]]<<-x
+    }
+    get <- function() {
+      c(runInfo, temporaryInfo)[1:count]
+    } 
+    get_as_df = function() tryCatch({
+      df <- data.frame(do.call(rbind, get()),row.names = NULL)
+      if(length(get())>0 && is.null(names(get()[[1]]))){
+        names(df)<-c(paste0("P",1:(ncol(df)-1)),"Value")
+      }
+      df
+    })
+    reset <- function() {
+      runInfo <<-list()
+      temporaryInfo <<- list()
+      temporarycount <<- 0
+      count <<- 0
+    }
+    enhanceWithRecorder <- function(fun,info_fun=\(p,r)c(p,r), ...) {
+      reset()
+      function(...) {
+        r <- fun(...)
+        add(info_fun(...,r))
+        r
+      }
+    }
+    list(
+      add=add, 
+      get=get,
+      get_as_df=get_as_df,
+      reset=reset,
+      enhanceWithRecorder = enhanceWithRecorder
+    )
+}
+
+FR <- create_function_recorder()
