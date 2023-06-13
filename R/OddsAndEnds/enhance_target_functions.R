@@ -373,8 +373,8 @@ FunctionRecorderToDisk <- setRefClass(
 #'
 #' ## Example of writing recorded data to disk
 #'
-#' We create a function that needs at least two 
-#' seconds to execute (by letting it sleep for 2 seconds).
+#' We create a function that needs at least one 
+#' second to execute (by letting it sleep for one second).
 
 
 longcomputation <- function (p) {
