@@ -129,56 +129,55 @@ round(o2$value,10)
 #' 
 #'
 
-createFunctionRecorder <- function() {
-  FunctionRecorder <- setRefClass(
-    "FunctionRecorder",
-    
-    fields=list(runInfo="list",temporaryInfo="list", count="numeric",temporarycount="numeric"),
-    
-    methods = list(
-      add = function(x) {
-        count <<- count + 1
-        temporarycount <<- temporarycount + 1
-        if(length(temporaryInfo)<temporarycount) {
-          ls <- list()
-          v <- rep(0.0,length(x))
-          for(i in 1:1000) {
-             ls[[length(ls)+1]]<-v
-          }
-          runInfo <<-c(runInfo,temporaryInfo)
-          temporarycount <<- 1
-          temporaryInfo <<- ls
-        }
-        temporaryInfo[[temporarycount]]<<-x
-      },
-      get = function() {
-        c(runInfo, temporaryInfo)[1:count]
-      } ,
-      get_as_df = function() tryCatch({
-        df <- data.frame(do.call(rbind, .self$get()),row.names = NULL)
-        if(length(.self$get())>0 && is.null(names(.self$get()[[1]]))){
-          names(df)<-c(paste0("P",1:(ncol(df)-1)),"Value")
-        }
-        df
-      }),
-      reset = function() {
-        runInfo <<-list()
-        temporaryInfo <<- list()
-        temporarycount <<- 0
-        count <<- 0
-      },
-      enhanceWithRecorder = function(fun,info_fun=\(p,r)c(p,r), ...) {
-        .self$reset()
-        function(...) {
-          r <- fun(...)
-          .self$add(info_fun(...,r))
-          r
-        }
-      }
-    ))
+FunctionRecorder <- setRefClass(
+  "FunctionRecorder",
   
-  FunctionRecorder$new()
-}
+  fields=list(runInfo="list",temporaryInfo="list", count="numeric",temporarycount="numeric"),
+  
+  methods = list(
+    add = function(x) {
+      count <<- count + 1
+      temporarycount <<- temporarycount + 1
+      if(length(temporaryInfo)<temporarycount) {
+        ls <- list()
+        v <- rep(0.0,length(x))
+        for(i in 1:1000) {
+          ls[[length(ls)+1]]<-v
+        }
+        runInfo <<-c(runInfo,temporaryInfo)
+        temporarycount <<- 1
+        temporaryInfo <<- ls
+      }
+      temporaryInfo[[temporarycount]]<<-x
+    },
+    get = function() {
+      c(runInfo, temporaryInfo)[1:count]
+    } ,
+    get_as_df = function() tryCatch({
+      df <- data.frame(do.call(rbind, .self$get()),row.names = NULL)
+      if(length(.self$get())>0 && is.null(names(.self$get()[[1]]))){
+        names(df)<-c(paste0("P",1:(ncol(df)-1)),"Value")
+      }
+      df
+    }),
+    reset = function() {
+      runInfo <<-list()
+      temporaryInfo <<- list()
+      temporarycount <<- 0
+      count <<- 0
+    },
+    enhanceWithRecorder = function(fun,info_fun=\(p,r)c(p,r), ...) {
+      .self$reset()
+      function(...) {
+        r <- fun(...)
+        .self$add(info_fun(...,r))
+        r
+      }
+    }
+  ))
+
+
+
 
 #' **Notice**: As the time to add elements to a list seems to increase with the 
 #' lenght of the list, we add the information to a shorter temporary list, which
@@ -192,7 +191,7 @@ createFunctionRecorder <- function() {
 #' supplying it to the optimisation function.
 #'
 
-FR <- createFunctionRecorder()
+FR <- FunctionRecorder$new()
 
 target_fun_rec <- FR$enhanceWithRecorder(target_fun)
 
