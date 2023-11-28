@@ -68,15 +68,23 @@ optim_options <- list(out_dir = paste0(getwd(), "/output"),   # path where
                    # the same results. If you want randomization, don't set it.
                    maxeval = 50)
 
+#' 
+forced_param_values <- c(vSLA=0.02, vRGRL=0.009)
+candidate_param <- c("vSLA", "vRGRL")
+
+
 #'
 #' # Runing the optimisation
 #'
 
 #' Run the optimisation process by CroptimizR
 CroptimizR::estim_param(obs_list = obs_list,
+                        crit_function = CroptimizR::crit_ols,
                         model_function = model_function,
                         model_options = model_options,
                         optim_options = optim_options,
+                        forced_param_values = forced_param_values,
+                        candidate_param = candidate_param,
                         param_info = param_info)
 
 #'
