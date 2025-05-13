@@ -12,7 +12,7 @@ See https://www.simplace.net/
 ## Install simplace and CroptimizR packages
 
 ```{r}
-install.packages('simplace', repos=c('http://r-forge.r-project.org','http://cran.r-project.org'))
+install.packages('simplace')
 devtools::install_github("SticsRPacks/CroptimizR@*release")
 ```
 
